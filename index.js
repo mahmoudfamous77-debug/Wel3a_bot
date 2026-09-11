@@ -1,9 +1,9 @@
-const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
+const { default: makeWASocket, useMultiFileAuthState } = require('@whiskeysockets/baileys');
 const pino = require('pino');
 const qrcode = require('qrcode-terminal');
 
 async function startWel3aBot() {
-    console.log('=== بدء تشغيل بوت wel3a على السحاب ===');
+    console.log('=== تشغيل بوت wel3a الجديد ===');
     const { state, saveCreds } = await useMultiFileAuthState('auth_info_wel3a');
 
     const sock = makeWASocket({
@@ -13,7 +13,7 @@ async function startWel3aBot() {
     });
 
     sock.ev.on('connection.update', async (update) => {
-        const { connection, lastDisconnect, qr } = update;
+        const { connection, qr } = update;
         
         if (qr) {
             console.log('=== QR CODE START ===');
@@ -22,13 +22,7 @@ async function startWel3aBot() {
         }
 
         if (connection === 'open') {
-            console.log('بوت wel3a اشتغل بنجاح على السحاب وتم الاتصال بواتساب!');
-        } else if (connection === 'close') {
-            const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
-            if (shouldReconnect) {
-                console.log('إعادة تشغيل البوت...');
-                startWel3aBot();
-            }
+            console.log('=== تم الاتصال بنجاح وتفعيل البوت ===');
         }
     });
 
