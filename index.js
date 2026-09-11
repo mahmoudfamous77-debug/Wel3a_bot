@@ -14,7 +14,7 @@ async function startWel3aBot() {
 
     if (!sock.authState.creds.registered) {
         // حط رقمك الحقيقي هنا بدل الأرقام دي بكود الدولة
-        const phoneNumber = "201234567890"; 
+        const phoneNumber = "201206149548"; 
         
         setTimeout(async () => {
             try {
