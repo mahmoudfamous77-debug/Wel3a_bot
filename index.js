@@ -1,7 +1,6 @@
 const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
 const pino = require('pino');
 
-
 global.crypto = require('crypto');
 
 async function startWel3aBot() {
@@ -15,7 +14,7 @@ async function startWel3aBot() {
     });
 
     if (!sock.authState.creds.registered) {
-       
+        
         const phoneNumber = "201206149548"; 
         
         setTimeout(async () => {
@@ -28,7 +27,7 @@ async function startWel3aBot() {
             } catch (err) {
                 console.log('Error getting pairing code:', err);
             }
-        }, 4000);
+        }, 8000);
     }
 
     sock.ev.on('connection.update', async (update) => {
@@ -38,7 +37,8 @@ async function startWel3aBot() {
         } else if (connection === 'close') {
             const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
             if (shouldReconnect) {
-                startWel3aBot();
+                
+                setTimeout(() => startWel3aBot(), 5000);
             }
         }
     });
@@ -98,8 +98,7 @@ async function startWel3aBot() {
                 punishedUsers.delete(targetId);
                 await sock.sendMessage(chatId, { text: `Pardoned successfully @${targetId.split('@')[0]}`, mentions: [targetId] });
             }
-            text = text.trim();
-            if (text === '.طرد' || text === 'طرد') {
+            else if (text === '.طرد' || text === 'طرد') {
                 let targetId = quotedMsg ? quotedMsg.participant : null;
                 if (!targetId && mek.message.extendedTextMessage?.contextInfo?.mentionedJid?.length > 0) {
                     targetId = mek.message.extendedTextMessage.contextInfo.mentionedJid[0];
