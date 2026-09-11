@@ -5,7 +5,7 @@ const qrcode = require('qrcode-terminal');
 global.crypto = require('crypto');
 
 async function startWel3aBot() {
-    console.log('=== Starting Wel3a Bot with QR Code ===');
+    console.log('=== Starting Wel3a Bot Safely ===');
     const { state, saveCreds } = await useMultiFileAuthState('auth_info_wel3a');
 
     const sock = makeWASocket({
@@ -19,7 +19,7 @@ async function startWel3aBot() {
         
         if (qr) {
             console.log('\n========================================');
-            console.log('SCAN THIS QR CODE WITH YOUR WHATSAPP:');
+            console.log('SCAN THIS QR CODE NOW:');
             console.log('========================================\n');
             qrcode.generate(qr, { small: true });
         }
@@ -29,7 +29,8 @@ async function startWel3aBot() {
         } else if (connection === 'close') {
             const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
             if (shouldReconnect) {
-                setTimeout(() => startWel3aBot(), 5000);
+                console.log('Reconnecting in 10 seconds...');
+                setTimeout(() => startWel3aBot(), 10000);
             }
         }
     });
