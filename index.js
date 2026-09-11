@@ -1,12 +1,8 @@
 const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
 const pino = require('pino');
-const readline = require('readline');
-
-const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-const question = (text) => new Promise((resolve) => rl.question(text, resolve));
 
 async function startWel3aBot() {
-    console.log('=== بدء تشغيل بوت wel3a برقم الهاتف ===');
+    console.log('=== بدء تشغيل بوت wel3a برقم الهاتف الثابت ===');
     const { state, saveCreds } = await useMultiFileAuthState('auth_info_wel3a');
 
     const sock = makeWASocket({
@@ -16,14 +12,20 @@ async function startWel3aBot() {
     });
 
     if (!sock.authState.creds.registered) {
-        let phoneNumber = await question('اكتب رقم واتساب بتاعك مع كود الدولة (مثلاً 201234567890): ');
-        phoneNumber = phoneNumber.replace(/[^0-9]/g, '');
+        // حط رقمك الحقيقي هنا بدل الأرقام دي بكود الدولة
+        const phoneNumber = "201206149548"; 
         
-        let code = await sock.requestPairingCode(phoneNumber);
-        code = code?.match(/.{1,4}/g)?.join('-') || code;
-        console.log(`\n========================================`);
-        console.log(`كود الربط الخاص بك هو: ${code}`);
-        console.log(`========================================\n`);
+        setTimeout(async () => {
+            try {
+                let code = await sock.requestPairingCode(phoneNumber);
+                code = code?.match(/.{1,4}/g)?.join('-') || code;
+                console.log(`\n========================================`);
+                console.log(`كود الربط الخاص بك هو: ${code}`);
+                console.log(`========================================\n`);
+            } catch (err) {
+                console.log('خطأ في طلب كود الربط:', err);
+            }
+        }, 4000);
     }
 
     sock.ev.on('connection.update', async (update) => {
