@@ -3,6 +3,7 @@ const pino = require('pino');
 const qrcode = require('qrcode-terminal');
 
 async function startWel3aBot() {
+    console.log('=== بدء تشغيل بوت wel3a على السحاب ===');
     const { state, saveCreds } = await useMultiFileAuthState('auth_info_wel3a');
 
     const sock = makeWASocket({
@@ -15,15 +16,17 @@ async function startWel3aBot() {
         const { connection, lastDisconnect, qr } = update;
         
         if (qr) {
-            console.log('امسح كود الـ QR الخاص ببوت wel3a:');
+            console.log('=== QR CODE START ===');
             qrcode.generate(qr, { small: true });
+            console.log('=== QR CODE END ===');
         }
 
         if (connection === 'open') {
-            console.log('بوت wel3a اشتغل بنجاح على السحاب!');
+            console.log('بوت wel3a اشتغل بنجاح على السحاب وتم الاتصال بواتساب!');
         } else if (connection === 'close') {
             const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
             if (shouldReconnect) {
+                console.log('إعادة تشغيل البوت...');
                 startWel3aBot();
             }
         }
