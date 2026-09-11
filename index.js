@@ -1,28 +1,30 @@
 const { default: makeWASocket, useMultiFileAuthState } = require('@whiskeysockets/baileys');
 const pino = require('pino');
-const qrcode = require('qrcode-terminal');
 
 async function startWel3aBot() {
-    console.log('=== تشغيل بوت wel3a الجديد ===');
+    console.log('=== بدء تشغيل بوت wel3a النسخة الذكية ===');
     const { state, saveCreds } = await useMultiFileAuthState('auth_info_wel3a');
 
     const sock = makeWASocket({
         auth: state,
         logger: pino({ level: 'silent' }),
-        browser: ["Wel3aBot", "Chrome", "10.0"]
+        browser: ["Chrome (Linux)", "", ""]
     });
 
     sock.ev.on('connection.update', async (update) => {
         const { connection, qr } = update;
         
         if (qr) {
-            console.log('=== QR CODE START ===');
-            qrcode.generate(qr, { small: true });
-            console.log('=== QR CODE END ===');
+            console.log('=== انسخ رابط الـ QR ده وافتحه في أي متصفح وهيظهر كود الـ QR فوراً ===');
+            try {
+                console.log(`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qr)}`);
+            } catch (e) {
+                console.log('QR Code:', qr);
+            }
         }
 
         if (connection === 'open') {
-            console.log('=== تم الاتصال بنجاح وتفعيل البوت ===');
+            console.log('=== مبروك! بوت wel3a اشتغل واتصل بواتساب بنجاح ===');
         }
     });
 
