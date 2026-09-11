@@ -1,8 +1,9 @@
 const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
 const pino = require('pino');
+const crypto = require('crypto');
 
 async function startWel3aBot() {
-    console.log('=== بدء تشغيل بوت wel3a برقم الهاتف الثابت ===');
+    console.log('=== Starting Wel3a Bot with Pairing Code ===');
     const { state, saveCreds } = await useMultiFileAuthState('auth_info_wel3a');
 
     const sock = makeWASocket({
@@ -13,17 +14,17 @@ async function startWel3aBot() {
 
     if (!sock.authState.creds.registered) {
         // حط رقمك الحقيقي هنا بدل الأرقام دي بكود الدولة
-        const phoneNumber = "201206149548"; 
+        const phoneNumber = "201234567890"; 
         
         setTimeout(async () => {
             try {
                 let code = await sock.requestPairingCode(phoneNumber);
                 code = code?.match(/.{1,4}/g)?.join('-') || code;
                 console.log(`\n========================================`);
-                console.log(`كود الربط الخاص بك هو: ${code}`);
+                console.log(`YOUR PAIRING CODE IS: ${code}`);
                 console.log(`========================================\n`);
             } catch (err) {
-                console.log('خطأ في طلب كود الربط:', err);
+                console.log('Error getting pairing code:', err);
             }
         }, 4000);
     }
@@ -31,7 +32,7 @@ async function startWel3aBot() {
     sock.ev.on('connection.update', async (update) => {
         const { connection, lastDisconnect } = update;
         if (connection === 'open') {
-            console.log('=== مبروك! بوت wel3a متصل بواتساب بنجاح ===');
+            console.log('=== Wel3a Bot Connected Successfully ===');
         } else if (connection === 'close') {
             const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
             if (shouldReconnect) {
@@ -48,9 +49,9 @@ async function startWel3aBot() {
         const { id, participants, action } = anu;
         for (let num of participants) {
             if (action === 'add') {
-                await sock.sendMessage(id, { text: `منور يا معلم wel3a الجديد @${num.split('@')[0]}`, mentions: [num] });
+                await sock.sendMessage(id, { text: `Welcome to Wel3a group @${num.split('@')[0]}`, mentions: [num] });
             } else if (action === 'remove') {
-                await sock.sendMessage(id, { text: `مع السلامة يا غالي @${num.split('@')[0]}`, mentions: [num] });
+                await sock.sendMessage(id, { text: `Goodbye @${num.split('@')[0]}`, mentions: [num] });
             }
         }
     });
@@ -88,12 +89,12 @@ async function startWel3aBot() {
             if (text === '.عقاب' && quotedMsg) {
                 const targetId = quotedMsg.participant;
                 punishedUsers.add(targetId);
-                await sock.sendMessage(chatId, { text: `تمت معاقبتك يا معلم من بوت wel3a @${targetId.split('@')[0]}`, mentions: [targetId] });
+                await sock.sendMessage(chatId, { text: `Punished successfully @${targetId.split('@')[0]}`, mentions: [targetId] });
             } 
             else if (text === '.عفو' && quotedMsg) {
                 const targetId = quotedMsg.participant;
                 punishedUsers.delete(targetId);
-                await sock.sendMessage(chatId, { text: `تم العفو عنك بواسطة wel3a @${targetId.split('@')[0]}`, mentions: [targetId] });
+                await sock.sendMessage(chatId, { text: `Pardoned successfully @${targetId.split('@')[0]}`, mentions: [targetId] });
             }
             else if (text === '.طرد' || text === 'طرد') {
                 let targetId = quotedMsg ? quotedMsg.participant : null;
@@ -103,7 +104,7 @@ async function startWel3aBot() {
                 if (targetId) {
                     try {
                         await sock.groupParticipantsUpdate(chatId, [targetId], 'remove');
-                        await sock.sendMessage(chatId, { text: `تم الطرد بواسطة wel3a @${targetId.split('@')[0]}`, mentions: [targetId] });
+                        await sock.sendMessage(chatId, { text: `Removed successfully @${targetId.split('@')[0]}`, mentions: [targetId] });
                     } catch (e) {}
                 }
             }
