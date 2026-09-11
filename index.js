@@ -1,6 +1,8 @@
 const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
 const pino = require('pino');
-const crypto = require('crypto');
+
+
+global.crypto = require('crypto');
 
 async function startWel3aBot() {
     console.log('=== Starting Wel3a Bot with Pairing Code ===');
@@ -13,7 +15,7 @@ async function startWel3aBot() {
     });
 
     if (!sock.authState.creds.registered) {
-        // حط رقمك الحقيقي هنا بدل الأرقام دي بكود الدولة
+       
         const phoneNumber = "201206149548"; 
         
         setTimeout(async () => {
@@ -96,7 +98,8 @@ async function startWel3aBot() {
                 punishedUsers.delete(targetId);
                 await sock.sendMessage(chatId, { text: `Pardoned successfully @${targetId.split('@')[0]}`, mentions: [targetId] });
             }
-            else if (text === '.طرد' || text === 'طرد') {
+            text = text.trim();
+            if (text === '.طرد' || text === 'طرد') {
                 let targetId = quotedMsg ? quotedMsg.participant : null;
                 if (!targetId && mek.message.extendedTextMessage?.contextInfo?.mentionedJid?.length > 0) {
                     targetId = mek.message.extendedTextMessage.contextInfo.mentionedJid[0];
