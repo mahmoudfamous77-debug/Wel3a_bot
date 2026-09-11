@@ -1,8 +1,12 @@
-const { default: makeWASocket, useMultiFileAuthState } = require('@whiskeysockets/baileys');
+const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
 const pino = require('pino');
+const readline = require('readline');
+
+const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+const question = (text) => new Promise((resolve) => rl.question(text, resolve));
 
 async function startWel3aBot() {
-    console.log('=== بدء تشغيل بوت wel3a النسخة الذكية ===');
+    console.log('=== بدء تشغيل بوت wel3a برقم الهاتف ===');
     const { state, saveCreds } = await useMultiFileAuthState('auth_info_wel3a');
 
     const sock = makeWASocket({
@@ -11,20 +15,26 @@ async function startWel3aBot() {
         browser: ["Chrome (Linux)", "", ""]
     });
 
-    sock.ev.on('connection.update', async (update) => {
-        const { connection, qr } = update;
+    if (!sock.authState.creds.registered) {
+        let phoneNumber = await question('اكتب رقم واتساب بتاعك مع كود الدولة (مثلاً 201234567890): ');
+        phoneNumber = phoneNumber.replace(/[^0-9]/g, '');
         
-        if (qr) {
-            console.log('=== انسخ رابط الـ QR ده وافتحه في أي متصفح وهيظهر كود الـ QR فوراً ===');
-            try {
-                console.log(`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qr)}`);
-            } catch (e) {
-                console.log('QR Code:', qr);
-            }
-        }
+        let code = await sock.requestPairingCode(phoneNumber);
+        code = code?.match(/.{1,4}/g)?.join('-') || code;
+        console.log(`\n========================================`);
+        console.log(`كود الربط الخاص بك هو: ${code}`);
+        console.log(`========================================\n`);
+    }
 
+    sock.ev.on('connection.update', async (update) => {
+        const { connection, lastDisconnect } = update;
         if (connection === 'open') {
-            console.log('=== مبروك! بوت wel3a اشتغل واتصل بواتساب بنجاح ===');
+            console.log('=== مبروك! بوت wel3a متصل بواتساب بنجاح ===');
+        } else if (connection === 'close') {
+            const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
+            if (shouldReconnect) {
+                startWel3aBot();
+            }
         }
     });
 
