@@ -1,43 +1,34 @@
 const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
 const pino = require('pino');
+const qrcode = require('qrcode-terminal');
 
 global.crypto = require('crypto');
 
 async function startWel3aBot() {
-    console.log('=== Starting Wel3a Bot with Pairing Code ===');
+    console.log('=== Starting Wel3a Bot with QR Code ===');
     const { state, saveCreds } = await useMultiFileAuthState('auth_info_wel3a');
 
     const sock = makeWASocket({
         auth: state,
         logger: pino({ level: 'silent' }),
-        browser: ["Chrome (Linux)", "", ""]
+        browser: ["Wel3aBot", "Chrome", "10.0"]
     });
 
-    if (!sock.authState.creds.registered) {
-        
-        const phoneNumber = "201206149548"; 
-        
-        setTimeout(async () => {
-            try {
-                let code = await sock.requestPairingCode(phoneNumber);
-                code = code?.match(/.{1,4}/g)?.join('-') || code;
-                console.log(`\n========================================`);
-                console.log(`YOUR PAIRING CODE IS: ${code}`);
-                console.log(`========================================\n`);
-            } catch (err) {
-                console.log('Error getting pairing code:', err);
-            }
-        }, 8000);
-    }
-
     sock.ev.on('connection.update', async (update) => {
-        const { connection, lastDisconnect } = update;
+        const { connection, lastDisconnect, qr } = update;
+        
+        if (qr) {
+            console.log('\n========================================');
+            console.log('SCAN THIS QR CODE WITH YOUR WHATSAPP:');
+            console.log('========================================\n');
+            qrcode.generate(qr, { small: true });
+        }
+
         if (connection === 'open') {
-            console.log('=== Wel3a Bot Connected Successfully ===');
+            console.log('=== Wel3a Bot Connected Successfully! ===');
         } else if (connection === 'close') {
             const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
             if (shouldReconnect) {
-                
                 setTimeout(() => startWel3aBot(), 5000);
             }
         }
